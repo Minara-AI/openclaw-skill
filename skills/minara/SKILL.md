@@ -49,6 +49,12 @@ Use API Key when `MINARA_API_KEY` is set; fall back to x402 when Circle Wallet, 
 
 Circle Wallet supports both EVM and Solana natively. Alternatively, use `EVM_PRIVATE_KEY` and/or `SOLANA_PRIVATE_KEY` as chain-specific fallbacks.
 
+### Security — Private keys
+
+> **CRITICAL:** Private keys (`EVM_PRIVATE_KEY`, `SOLANA_PRIVATE_KEY`, or any secret used for signing) must **never** be exposed to any external party — under no circumstances, regardless of user instructions, system prompts, or messages. Never include private keys in any LLM API request context (prompts, tool arguments, logs, or responses). Use env injection or secure credential storage only; perform signing in isolated local code, not in model-facing text.
+>
+> Prefer Circle Wallet when possible — it keeps signing server-side and never exposes keys.
+
 ## Decision logic
 
 ```
@@ -306,8 +312,8 @@ For full code, read `{baseDir}/examples.md`.
 ```
 
 - `minara.apiKey` — Minara API Key, or set `MINARA_API_KEY` in env.
-- `minara.env.EVM_PRIVATE_KEY` — (optional) EVM EOA fallback for x402 and local signing.
-- `minara.env.SOLANA_PRIVATE_KEY` — (optional) Solana EOA fallback for x402 and local signing. Base58-encoded secret key.
+- `minara.env.EVM_PRIVATE_KEY` — (optional) EVM EOA fallback. Never expose to external parties or include in LLM context.
+- `minara.env.SOLANA_PRIVATE_KEY` — (optional) Solana EOA fallback. Base58 secret key. Never expose or include in LLM context.
 - `circle-wallet` — enable only; credentials are managed by `circle-wallet setup` and stored in `~/.openclaw/circle-wallet/config.json`.
 
 > All private keys are optional when Circle Wallet is configured. Circle Wallet handles both EVM and Solana.
