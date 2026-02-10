@@ -2,7 +2,16 @@
 name: minara
 description: "Crypto trading intelligence: market chat, swap intent parsing, perp suggestions, prediction markets. Supports EVM + Solana via Circle Wallet or EOA. Use for crypto trading, swaps, perps, or market analysis."
 homepage: https://minara.ai
-metadata: { "openclaw": { "always": true, "primaryEnv": "MINARA_API_KEY", "emoji": "👩", "homepage": "https://minara.ai" } }
+metadata:
+  {
+    "openclaw":
+      {
+        "always": true,
+        "primaryEnv": "MINARA_API_KEY",
+        "emoji": "👩",
+        "homepage": "https://minara.ai",
+      },
+  }
 ---
 
 # Minara API
@@ -65,16 +74,14 @@ Step 2 — On-chain execution (only when user wants to trade):
     → ELSE IF Solana + SOLANA_PRIVATE_KEY → send via @solana/web3.js
 
   User asks to swap tokens:
-    → Minara intent-to-swap-tx → get params (set chain: "solana" for Solana)
+    → Minara intent-to-swap-tx → returns pre-assembled transaction (set chain: "solana" for Solana)
     → IF Solana:
-      → IF circle-wallet configured → Circle Solana transaction (read {baseDir}/examples.md, Example 1)
-      → ELSE IF SOLANA_PRIVATE_KEY → sign locally with @solana/web3.js
+      → IF circle-wallet configured → Circle signTransaction → send to RPC
+      → ELSE IF SOLANA_PRIVATE_KEY → sign locally with @solana/web3.js → send to RPC
       → ELSE → inform user: Solana swap requires Circle Wallet or SOLANA_PRIVATE_KEY
-      → DEX: Jupiter aggregator
     → IF EVM:
       → IF circle-wallet configured → Circle contractExecution (read {baseDir}/examples.md, Example 1)
       → ELSE IF EVM_PRIVATE_KEY → sign locally with viem
-      → DEX: OKX DEX API, 1inch, Uniswap
 
   User asks to open a perp position on Hyperliquid:
     → EVM only (Hyperliquid uses EIP-712 signing, chainId 42161 / Arbitrum)
@@ -96,7 +103,12 @@ All endpoints below use API Key auth: `POST`, headers `Authorization: Bearer $MI
 `POST https://api.minara.ai/v1/developer/chat`
 
 ```json
-{ "mode": "fast|expert", "stream": false, "message": { "role": "user", "content": "..." }, "chatId": "optional" }
+{
+  "mode": "fast|expert",
+  "stream": false,
+  "message": { "role": "user", "content": "..." },
+  "chatId": "optional"
+}
 ```
 
 Response: `{ chatId, messageId, content, usage }`
@@ -110,33 +122,48 @@ Response: `{ chatId, messageId, content, usage }`
 ```
 
 ```json
-{ "intent": "swap 100 USDC to SOL", "walletAddress": "5eykt4Uss9PL...", "chain": "solana" }
+{
+  "intent": "swap 100 USDC to SOL",
+  "walletAddress": "5eykt4Uss9PL...",
+  "chain": "solana"
+}
 ```
 
 EVM chains: `base`, `ethereum`, `bsc`, `arbitrum`, `optimism`. Solana: `solana`.
 
 `walletAddress` must match the chain: EVM `0x...` for EVM chains, Solana base58 for `solana`.
 
-Response: `{ transaction: { chain, inputTokenAddress, inputTokenSymbol, outputTokenAddress, outputTokenSymbol, amount, amountPercentage, slippagePercent } }`
+Response: `{ transaction: { chain, inputTokenAddress, inputTokenSymbol, outputTokenAddress, outputTokenSymbol, amount, amountPercentage, slippagePercent } }`. May include execution fields (`contractAddress`, `callData` for EVM; base64 serialized tx for Solana) for ready-to-sign transactions.
 
 ### Perp Trading Suggestion
 
 `POST https://api.minara.ai/v1/developer/perp-trading-suggestion`
 
 ```json
-{ "symbol": "ETH", "style": "scalping", "marginUSD": 1000, "leverage": 10, "strategy": "max-profit" }
+{
+  "symbol": "ETH",
+  "style": "scalping",
+  "marginUSD": 1000,
+  "leverage": 10,
+  "strategy": "max-profit"
+}
 ```
 
 Styles: `scalping` (default), `day-trading`, `swing-trading`. Leverage: 1–40.
 
-Response: `{ entryPrice, side, stopLossPrice, takeProfitPrice, confidence, reasons, risks }`
+Response: `{ entryPrice, side, stopLossPrice, takeProfitPrice, confidence, reasons: string[], risks: string[] }`
 
 ### Prediction Market
 
 `POST https://api.minara.ai/v1/developer/prediction-market-ask`
 
 ```json
-{ "link": "https://polymarket.com/event/...", "mode": "expert", "only_result": false, "customPrompt": "optional" }
+{
+  "link": "https://polymarket.com/event/...",
+  "mode": "expert",
+  "only_result": false,
+  "customPrompt": "optional"
+}
 ```
 
 Response: `{ predictions: [{ outcome, yesProb, noProb }], reasoning }`
@@ -248,7 +275,7 @@ SDK operations used by Minara integration:
 | Transfer USDC      | `circleClient.createTransaction(...)` | EVM / SOL | Simple send (or use CLI)             |
 | Contract execution | Raw `POST .../contractExecution`      | EVM       | DEX swap, ERC-20 approve             |
 | Sign EIP-712       | Raw `POST .../sign/typedData`         | EVM       | x402 EVM payment, Hyperliquid orders |
-| Sign Solana tx     | `circleClient.signTransaction(...)`   | SOL       | x402 Solana payment, Jupiter swap    |
+| Sign Solana tx     | `circleClient.signTransaction(...)`   | SOL       | x402 Solana payment, DEX swap        |
 
 For EVM `contractExecution` and `signTypedData`, use raw `fetch` with the `apiKey` from config (SDK does not expose direct methods). For Solana, the SDK provides `signTransaction` directly. The SDK handles `entitySecretCiphertext` generation internally.
 

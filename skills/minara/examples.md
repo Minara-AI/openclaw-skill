@@ -66,10 +66,7 @@ const swapTx = await fetch(
   },
 ).then((r) => r.json());
 
-// swapTx.transaction = {
-//   chain, inputTokenAddress, outputTokenAddress,
-//   amount, slippagePercent, ...
-// }
+// API returns a pre-assembled transaction ready to sign (format varies by chain)
 ```
 
 ### 2a. Simple USDC transfer — use CLI (EVM or Solana)
@@ -84,16 +81,14 @@ circle-wallet send <base58_recipient> 500 --from <sol_wallet>
 
 The CLI auto-detects the chain from the wallet address format.
 
-### 2b. EVM DEX swap — Circle contractExecution
+### 2b. EVM swap — Circle contractExecution
 
 User: _"swap 500 USDC to ETH on Base"_
 
-Build calldata from Minara's swap params via a DEX aggregator (OKX DEX API, 1inch, Uniswap), then execute:
+The API returns a pre-assembled transaction (contract address + calldata). Execute via Circle:
 
 ```typescript
-const dexCalldata = await buildEvmDexCalldata(swapTx.transaction);
-
-// Circle contractExecution requires raw API call (not in SDK)
+// swapTx.transaction contains contractAddress, callData, etc.
 const res = await fetch(
   "https://api.circle.com/v1/w3s/developer/transactions/contractExecution",
   {
@@ -109,8 +104,8 @@ const res = await fetch(
         config.apiKey,
       ),
       walletId: walletId,
-      contractAddress: dexCalldata.routerAddress,
-      callData: dexCalldata.data,
+      contractAddress: swapTx.transaction.contractAddress,
+      callData: swapTx.transaction.callData,
       feeLevel: "MEDIUM",
     }),
   },
@@ -119,39 +114,22 @@ const res = await fetch(
 
 > For `entitySecretCiphertext` generation in EVM raw API calls (2b), use the Circle SDK's `forgeEntitySecretCiphertext` utility or encrypt the entity secret with Circle's RSA public key. See [Circle entity secret docs](https://developers.circle.com/w3s/entity-secret-management). The Solana SDK method (2c) handles this internally.
 
-### 2c. Solana DEX swap — Circle signTransaction + Jupiter
+### 2c. Solana swap — Circle signTransaction
 
 User: _"swap 100 USDC to SOL"_
 
-Build a swap transaction via [Jupiter aggregator](https://station.jup.ag/docs), then sign with Circle:
+The API returns a pre-assembled transaction (base64 serialized). Sign with Circle, then send to RPC:
 
 ```typescript
-// Step 1: Get swap transaction from Jupiter
-const quoteRes = await fetch(
-  `https://quote-api.jup.ag/v6/quote?inputMint=${swapTx.transaction.inputTokenAddress}&outputMint=${swapTx.transaction.outputTokenAddress}&amount=${swapTx.transaction.amount}&slippageBps=${swapTx.transaction.slippagePercent * 100}`,
-).then((r) => r.json());
-
-const swapRes = await fetch("https://quote-api.jup.ag/v6/swap", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    quoteResponse: quoteRes,
-    userPublicKey: walletAddress, // Solana base58 address from Circle wallet
-  }),
-}).then((r) => r.json());
-
-// swapRes.swapTransaction = base64-encoded serialized Solana transaction
-
-// Step 2: Sign with Circle Wallet (SDK has direct signTransaction method for Solana)
+// swapTx.transaction contains the raw base64 serialized Solana transaction
 const signRes = await circleClient.signTransaction({
   walletId: solWalletId,
-  rawTransaction: swapRes.swapTransaction, // base64 serialized Solana tx
-  memo: "Jupiter swap via Minara",
+  rawTransaction: swapTx.transaction,
+  memo: "Solana swap via Minara",
 });
 
 const signedTx = signRes.data.signedTransaction;
 
-// Step 3: Submit to Solana
 import { Connection } from "@solana/web3.js";
 const connection = new Connection("https://api.mainnet-beta.solana.com");
 const txId = await connection.sendRawTransaction(
@@ -163,8 +141,8 @@ console.log(`Swap tx: https://solscan.io/tx/${txId}`);
 ### Flow
 
 ```
-EVM:    Minara intent-to-swap-tx → DEX aggregator → Circle contractExecution → tx on-chain
-Solana: Minara intent-to-swap-tx → Jupiter quote + swap → Circle signTransaction → Solana RPC
+EVM:    Minara intent-to-swap-tx → pre-assembled tx → Circle contractExecution → tx on-chain
+Solana: Minara intent-to-swap-tx → pre-assembled tx → Circle signTransaction → RPC send
 ```
 
 ---

@@ -30,8 +30,8 @@ An [OpenClaw](https://docs.openclaw.ai) skill that gives your AI agent crypto tr
                     └──┬──────────┬───────────┬───────────┘
                        │          │           │
                   Spot Swap   Perp Trading  USDC Transfer
-                  EVM: 1inch  (Hyperliquid  EVM or Solana
-                  SOL: Jupiter  EVM only)
+                  sign+send   Hyperliquid   EVM or Solana
+                  (EVM+SOL)   (EVM only)
                        │          │           │
                     ┌──▼──────────▼───────────▼───────────┐
                     │         Circle Wallet (MPC)          │
@@ -110,7 +110,7 @@ The skill includes three end-to-end integration examples in [`examples.md`](skil
 
 | Example                | Chains       | Flow                                                                              |
 | ---------------------- | ------------ | --------------------------------------------------------------------------------- |
-| **1 — Spot Swap**      | EVM + Solana | Minara `intent-to-swap-tx` -> DEX (1inch / Jupiter) -> Circle execution           |
+| **1 — Spot Swap**      | EVM + Solana | Minara `intent-to-swap-tx` (returns pre-assembled tx) -> sign -> Circle execution |
 | **2 — Perp Trading**   | EVM only     | Minara `perp-trading-suggestion` -> Hyperliquid EIP-712 -> Circle `signTypedData` |
 | **3A — x402 (EVM)**    | EVM          | 402 challenge -> EIP-712 payment -> Circle `signTypedData` -> re-send             |
 | **3B — x402 (Solana)** | Solana       | 402 challenge -> Solana tx -> Circle `signTransaction` -> re-send                 |
@@ -130,7 +130,6 @@ skills/minara/
 - [x402 Guide](https://minara.ai/docs/ecosystem/agent-api/getting-started-by-x402)
 - [Circle Wallet Skill](https://clawhub.ai/eltontay/circle-wallet) — MPC wallet for agents
 - [Hyperliquid API](https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint)
-- [Jupiter Aggregator](https://station.jup.ag/docs) — Solana DEX aggregator
 - [OpenClaw Skills](https://docs.openclaw.ai/tools/skills) — Skill authoring guide
 - [ClawHub](https://clawhub.ai) — Skill registry
 
