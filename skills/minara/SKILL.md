@@ -3,15 +3,7 @@ name: minara
 description: "Crypto trading intelligence: market chat, swap intent parsing, perp suggestions, prediction markets. Supports EVM + Solana via Circle Wallet or EOA. Use for crypto trading, swaps, perps, or market analysis."
 homepage: https://minara.ai
 metadata:
-  {
-    "openclaw":
-      {
-        "always": true,
-        "primaryEnv": "MINARA_API_KEY",
-        "emoji": "👩",
-        "homepage": "https://minara.ai",
-      },
-  }
+  {"openclaw":{"always":false,"disableModelInvocation":true,"primaryEnv":"MINARA_API_KEY","requires":{"config":["skills.entries.minara.enabled"]},"emoji":"👩","homepage":"https://minara.ai"}}
 ---
 
 # Minara API
@@ -48,6 +40,19 @@ Use API Key when `MINARA_API_KEY` is set; fall back to x402 when Circle Wallet, 
 | **Solana EOA** (fallback)     | `SOLANA_PRIVATE_KEY`           | Solana only  | x402 Solana, local signing via @solana/web3.js                                    |
 
 Circle Wallet supports both EVM and Solana natively. Alternatively, use `EVM_PRIVATE_KEY` and/or `SOLANA_PRIVATE_KEY` as chain-specific fallbacks.
+
+### Declared credentials
+
+This skill may access the following credential sources (declare before use; restrict storage and permissions):
+
+| Source | Path / Env | Purpose | Required |
+| ------ | ---------- | ------- | -------- |
+| Minara API Key | `MINARA_API_KEY` env or `skills.entries.minara.apiKey` | API auth | One of API key or x402 |
+| Circle config | `~/.openclaw/circle-wallet/config.json` | `apiKey`, `entitySecret` for Circle Wallet | Optional (preferred for signing) |
+| EVM private key | `EVM_PRIVATE_KEY` env or `skills.entries.minara.env.EVM_PRIVATE_KEY` | EVM EOA fallback | Optional |
+| Solana private key | `SOLANA_PRIVATE_KEY` env or `skills.entries.minara.env.SOLANA_PRIVATE_KEY` | Solana EOA fallback | Optional |
+
+Validate the Circle config path and contents yourself. Do not place raw private keys in env or files accessible to the agent; prefer Circle Wallet (server-side signing). Test in a sandbox wallet with minimal balances and no production keys.
 
 ### Security — Private keys
 
@@ -316,10 +321,13 @@ For full code, read `{baseDir}/examples.md`.
 - `minara.env.SOLANA_PRIVATE_KEY` — (optional) Solana EOA fallback. Base58 secret key. Never expose or include in LLM context.
 - `circle-wallet` — enable only; credentials are managed by `circle-wallet setup` and stored in `~/.openclaw/circle-wallet/config.json`.
 
+> **Setup & storage:** Confirm where `MINARA_API_KEY` and Circle config are stored; limit their scope and file permissions. Prefer Circle Wallet over raw private keys. If usage is necessary, test in a sandbox account/wallet with minimal balances and no production keys.
+>
 > All private keys are optional when Circle Wallet is configured. Circle Wallet handles both EVM and Solana.
 
 ## Additional resources
 
+- GitHub: [github.com/Minara-AI/openclaw-skill](https://github.com/Minara-AI/openclaw-skill)
 - Full integration examples with code: `{baseDir}/examples.md`
 - Minara docs: [minara.ai/docs](https://minara.ai/docs)
 - Circle Wallet skill: [clawhub.ai/eltontay/circle-wallet](https://clawhub.ai/eltontay/circle-wallet)
