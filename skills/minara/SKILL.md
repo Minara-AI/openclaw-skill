@@ -26,7 +26,7 @@ Detect the user's address format to determine the correct chain family. If ambig
 
 | Method      | Base URL                 | Requires                                                                    |
 | ----------- | ------------------------ | --------------------------------------------------------------------------- |
-| **API Key** | `https://api.minara.ai`  | `MINARA_API_KEY`                                                            |
+| **API Key** | `https://api-developer.minara.ai` | `MINARA_API_KEY`                                                            |
 | **x402**    | `https://x402.minara.ai` | Circle Wallet (preferred), `EVM_PRIVATE_KEY` or `SOLANA_PRIVATE_KEY` + USDC |
 
 Use API Key when `MINARA_API_KEY` is set; fall back to x402 when Circle Wallet, `EVM_PRIVATE_KEY`, or `SOLANA_PRIVATE_KEY` is available. x402 is for **Minara API payment only** — not needed for on-chain execution.
@@ -111,7 +111,7 @@ All endpoints below use API Key auth: `POST`, headers `Authorization: Bearer $MI
 
 ### Chat
 
-`POST https://api.minara.ai/v1/developer/chat`
+`POST https://api-developer.minara.ai/v1/developer/chat`
 
 ```json
 {
@@ -126,7 +126,7 @@ Response: `{ chatId, messageId, content, usage }`
 
 ### Intent to Swap
 
-`POST https://api.minara.ai/v1/developer/intent-to-swap-tx`
+`POST https://api-developer.minara.ai/v1/developer/intent-to-swap-tx`
 
 ```json
 { "intent": "swap 0.1 ETH to USDC", "walletAddress": "0x...", "chain": "base" }
@@ -144,11 +144,11 @@ EVM chains: `base`, `ethereum`, `bsc`, `arbitrum`, `optimism`. Solana: `solana`.
 
 `walletAddress` must match the chain: EVM `0x...` for EVM chains, Solana base58 for `solana`.
 
-Response: `{ transaction: { chain, inputTokenAddress, inputTokenSymbol, outputTokenAddress, outputTokenSymbol, amount, amountPercentage, slippagePercent } }`. May include execution fields (`contractAddress`, `callData` for EVM; base64 serialized tx for Solana) for ready-to-sign transactions.
+Response: `{ intent: { chain, inputTokenAddress, inputTokenSymbol, outputTokenSymbol, amount, userWalletAddress }, quote: { fromTokenAmount, toTokenAmount, estimatedGas, priceImpact, tradeFee }, inputToken, outputToken, unsignedTx }`. EVM: `unsignedTx` has `chainType`, `from`, `to`, `data`, `value`, `gas`, `gasPrice` — use `unsignedTx.to` as contractAddress and `unsignedTx.data` as callData for Circle `createContractExecutionTransaction`. Solana: response format may differ; use serialized tx when provided.
 
 ### Perp Trading Suggestion
 
-`POST https://api.minara.ai/v1/developer/perp-trading-suggestion`
+`POST https://api-developer.minara.ai/v1/developer/perp-trading-suggestion`
 
 ```json
 {
@@ -166,7 +166,7 @@ Response: `{ entryPrice, side, stopLossPrice, takeProfitPrice, confidence, reaso
 
 ### Prediction Market
 
-`POST https://api.minara.ai/v1/developer/prediction-market-ask`
+`POST https://api-developer.minara.ai/v1/developer/prediction-market-ask`
 
 ```json
 {

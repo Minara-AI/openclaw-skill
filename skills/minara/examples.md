@@ -51,7 +51,7 @@ const isEvm = walletAddress.startsWith("0x");
 const chain = isEvm ? "base" : "solana"; // or use user-specified chain
 
 const swapTx = await fetch(
-  "https://api.minara.ai/v1/developer/intent-to-swap-tx",
+  "https://api-developer.minara.ai/v1/developer/intent-to-swap-tx",
   {
     method: "POST",
     headers: {
@@ -88,12 +88,12 @@ User: _"swap 500 USDC to ETH on Base"_
 The API returns a pre-assembled transaction (contract address + calldata). Execute via Circle SDK:
 
 ```typescript
-// swapTx.transaction contains contractAddress, callData, etc.
+// swapTx.unsignedTx contains to (contractAddress), data (callData) for EVM
 const res = await circleClient.createContractExecutionTransaction({
   idempotencyKey: crypto.randomUUID(),
   walletId: walletId,
-  contractAddress: swapTx.transaction.contractAddress,
-  callData: swapTx.transaction.callData,
+  contractAddress: swapTx.unsignedTx.to,
+  callData: swapTx.unsignedTx.data,
   feeLevel: "MEDIUM",
 });
 // SDK handles entitySecretCiphertext internally when initialized with entitySecret
@@ -106,10 +106,10 @@ User: _"swap 100 USDC to SOL"_
 The API returns a pre-assembled transaction (base64 serialized). Sign with Circle, then send to RPC:
 
 ```typescript
-// swapTx.transaction contains the raw base64 serialized Solana transaction
+// Solana: response may include unsignedTx.rawTransaction or transaction (base64); check API response
 const signRes = await circleClient.signTransaction({
   walletId: solWalletId,
-  rawTransaction: swapTx.transaction,
+  rawTransaction: swapTx.unsignedTx?.rawTransaction ?? swapTx.transaction,
   memo: "Solana swap via Minara",
 });
 
@@ -144,7 +144,7 @@ Hyperliquid is a permissionless perp DEX — no API key. Orders use EIP-712 sign
 
 ```typescript
 const strategy = await fetch(
-  "https://api.minara.ai/v1/developer/perp-trading-suggestion",
+  "https://api-developer.minara.ai/v1/developer/perp-trading-suggestion",
   {
     method: "POST",
     headers: {

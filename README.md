@@ -91,7 +91,7 @@ circle-wallet create "SOL Wallet" --chain SOL
 
 | Method            | Base URL                                  | Requires                                  |
 | ----------------- | ----------------------------------------- | ----------------------------------------- |
-| **API Key**       | `https://api.minara.ai`                   | `MINARA_API_KEY`                          |
+| **API Key**       | `https://api-developer.minara.ai`         | `MINARA_API_KEY`                          |
 | **x402 (EVM)**    | `https://x402.minara.ai/x402/chat`        | Circle Wallet or `EVM_PRIVATE_KEY` + USDC |
 | **x402 (Solana)** | `https://x402.minara.ai/x402/solana/chat` | Circle Wallet (Solana) + USDC             |
 
