@@ -1,6 +1,6 @@
 # Minara Skills
 
-The ultimate and all-in-one digital finance solution designed for agents: built-in crypto wallet, assets management, transfers, trading token & stock, and institution-grade real-time market insights. Powered by [Minara](https://minara.ai).
+The ultimate and all-in-one digital finance solution designed for agents: built-in crypto wallet, assets management, transfers, trading crypto & stock, and institution-grade real-time market insights. Powered by [Minara](https://minara.ai).
 
 ## Features
 
