@@ -8,25 +8,30 @@ minara login -e user@example.com   # Email with verification code
 minara login --google              # Google OAuth
 minara login --apple               # Apple ID
 minara account                     # View account info + wallet addresses
-minara deposit                     # Show deposit addresses for all chains
+minara deposit spot                # Show spot deposit addresses (EVM + Solana)
 ```
 
 ## 2 — Swap tokens (CLI)
 
+Chain is auto-detected from the token.
+
 ```bash
-# Interactive
+# Interactive: side → token → amount
 minara swap
 
-# By ticker
-minara swap -c solana -s buy -t '$BONK' -a 100
-minara swap -c base -s buy -t '$ETH' -a 50
-minara swap -c solana -s sell -t '$SOL' -a 200
+# By ticker (chain auto-detected)
+minara swap -s buy -t '$BONK' -a 100
+minara swap -s buy -t '$ETH' -a 50
+minara swap -s sell -t '$SOL' -a 200
+
+# Sell entire balance
+minara swap -s sell -t '$NVDAx' -a all
 
 # By contract address
-minara swap -c solana -s buy -t DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 -a 100
+minara swap -s buy -t DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 -a 100
 
 # Dry run (simulate without executing)
-minara swap -c base -s buy -t '$ETH' -a 50 --dry-run
+minara swap -s buy -t '$ETH' -a 50 --dry-run
 ```
 
 ## 3 — Swap tokens (API intent-to-swap)
@@ -51,7 +56,7 @@ const quote = await fetch(
 ).then((r) => r.json());
 
 // quote = { intent, quote, inputToken, outputToken, approval, unsignedTx }
-// → show quote to user → on confirm → minara swap -c base -s sell -t '$ETH' -a 0.1
+// → show quote to user → on confirm → minara swap -s sell -t '$ETH' -a 0.1
 ```
 
 ## 4 — Transfer & withdraw
@@ -61,17 +66,23 @@ const quote = await fetch(
 minara transfer
 
 # Withdraw to external wallet
-minara withdraw -c solana -t '$SOL' -a 10 --to <address>
-minara withdraw   # Interactive
+minara withdraw -t '$SOL' -a 10 --to <address>
+minara withdraw   # Interactive (accepts ticker or address)
 ```
 
 ## 5 — Wallet & portfolio
 
 ```bash
-minara assets                  # Interactive: Spot / Perps / Both
-minara assets spot             # Spot balances across all chains
-minara assets perps            # Perps balance + open positions
+minara balance                 # Quick total: Spot + Perps USDC/USDT balance
+minara assets                  # Full overview: spot holdings + perps account
+minara assets spot             # Spot wallet: portfolio value, cost, PnL, holdings
+minara assets perps            # Perps: equity, margin, positions
 minara assets spot --json      # JSON output
+
+# Deposit
+minara deposit                 # Interactive: Spot (addresses) or Perps (address / transfer)
+minara deposit spot            # Show spot deposit addresses (EVM + Solana)
+minara deposit perps           # Perps: show Arbitrum address, or transfer Spot → Perps
 ```
 
 ## 6 — Perpetual futures
@@ -256,17 +267,8 @@ minara limit-order list            # List all orders
 minara limit-order cancel abc123   # Cancel by ID
 ```
 
-## 12 — Copy trading
 
-```bash
-minara copy-trade create           # Interactive: target wallet, chain, amount
-minara copy-trade list             # List all bots
-minara copy-trade start abc123     # Resume
-minara copy-trade stop abc123      # Pause
-minara copy-trade delete abc123    # Delete
-```
-
-## 13 — Premium & subscription
+## 12 — Premium & subscription
 
 ```bash
 minara premium plans               # View plans
