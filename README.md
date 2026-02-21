@@ -7,11 +7,12 @@ An [OpenClaw](https://docs.openclaw.ai) skill that gives your AI agent crypto tr
 | Capability              | Interface         | Chains       | Description                                                            |
 | ----------------------- | ----------------- | ------------ | ---------------------------------------------------------------------- |
 | **Login & Account**     | CLI               | All          | Email, Google, or Apple login — persistent session                     |
-| **Spot Swap**           | CLI / API         | EVM + Solana | Token swaps by ticker, name, or contract address; natural-language intent parsing via API |
+| **Balance & Portfolio** | CLI               | All          | Quick balance, spot holdings with PnL, perps equity & positions        |
+| **Spot Swap**           | CLI / API         | EVM + Solana | Chain-abstracted swaps (auto-detect chain from token); NL intent parsing via API |
 | **Transfer & Withdraw** | CLI               | EVM + Solana | Send tokens to external wallets                                        |
+| **Deposit**             | CLI               | EVM + Solana | Spot deposit addresses; deposit to perps (direct or Spot → Perps transfer) |
 | **Perpetual Futures**   | CLI / API         | EVM          | Orders, positions, leverage, TP/SL; AI strategy via API                |
 | **Limit Orders**        | CLI               | EVM + Solana | Price-triggered limit orders with expiry                               |
-| **Copy Trading**        | CLI               | EVM + Solana | Mirror trades from target wallets                                      |
 | **AI Chat**             | CLI / API         | All          | Interactive REPL & single-shot with fast/quality/thinking modes        |
 | **Market Discovery**    | CLI               | All          | Trending tokens, Fear & Greed Index, BTC metrics, token search         |
 | **Prediction Market**   | API               | All          | Polymarket event analysis with probability estimates                   |
@@ -55,9 +56,10 @@ minara login
 
 # 3. Start using
 minara account                                    # View wallet addresses
-minara deposit                                    # Get deposit addresses
+minara balance                                    # Quick total balance
+minara deposit spot                               # Show spot deposit addresses
 minara chat "BTC price?"                          # Ask the AI
-minara swap -c solana -s buy -t '$BONK' -a 100   # Swap tokens
+minara swap -s buy -t '$BONK' -a 100             # Swap tokens (chain auto-detected)
 minara discover trending                          # Trending tokens
 ```
 
@@ -94,6 +96,25 @@ Add to `~/.openclaw/openclaw.json`:
 ## Supported Chains
 
 Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana, Berachain, Blast, Manta, Mode, Sonic.
+
+## Examples
+
+See [`examples.md`](skills/minara/examples.md) for full commands and code:
+
+| # | Scenario | Interface |
+|---|---|---|
+| 1 | Login & account | CLI |
+| 2 | Swap tokens | CLI |
+| 3 | Swap tokens (intent parsing) | API |
+| 4 | Transfer & withdraw | CLI |
+| 5 | Balance, portfolio & deposit | CLI |
+| 6 | Perpetual futures | CLI |
+| 7 | Perp strategy | API |
+| 8 | AI chat | CLI / API |
+| 9 | Market discovery | CLI |
+| 10 | Prediction market | API |
+| 11 | Limit orders | CLI |
+| 12 | Premium & subscription | CLI |
 
 ## File Structure
 

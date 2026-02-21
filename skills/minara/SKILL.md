@@ -4,7 +4,7 @@ description: "Crypto trading: swap, perps, transfer, deposit, withdraw, AI chat,
 homepage: https://minara.ai
 disable-model-invocation: true
 metadata:
-  { "openclaw": { "always": false, "disableModelInvocation": true, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] } }
+  { "openclaw": { "always": false, "disableModelInvocation": true, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara@latest", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] } }
 ---
 
 # Minara
@@ -23,11 +23,14 @@ Match the user's message to the **first** matching row. `API_KEY` = `MINARA_API_
 
 Triggers: message contains token names/tickers + action words (swap, buy, sell, convert, exchange, trade) + optionally a chain name.
 
+Chain is **auto-detected** from the token. If a token exists on multiple chains, the CLI prompts the user to pick one (sorted by gas cost). Sell mode supports `-a all` to sell entire balance.
+
 | User intent pattern | Action |
 |---|---|
-| Natural-language crypto swap — "swap 0.1 ETH to USDC", "buy me 100 USDC worth of ETH", "sell 50 SOL for USDC", "convert 200 USDC to BONK on Solana", "exchange my ETH for USDC on Base" | **IF** `API_KEY` → call `POST /v1/developer/intent-to-swap-tx` with `{ intent: "<user text>", walletAddress, chain }` → show quote → confirm → execute via `minara swap`. **ELSE** → extract params → `minara swap -c <chain> -s <buy\|sell> -t '<token>' -a <amount>` |
-| Explicit crypto swap params (chain, token, amount already parsed) | `minara swap -c <chain> -s <buy\|sell> -t '<token>' -a <amount>` |
-| Simulate a crypto swap without executing | `minara swap -c <chain> -s <side> -t '<token>' -a <amount> --dry-run` |
+| Natural-language crypto swap — "swap 0.1 ETH to USDC", "buy me 100 USDC worth of ETH", "sell 50 SOL for USDC", "convert 200 USDC to BONK on Solana", "exchange my ETH for USDC on Base" | **IF** `API_KEY` → call `POST /v1/developer/intent-to-swap-tx` with `{ intent: "<user text>", walletAddress, chain }` → show quote → confirm → execute via `minara swap`. **ELSE** → extract params → `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
+| Explicit crypto swap params (token, amount already parsed) | `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
+| "sell all my BONK", "dump entire SOL position" | `minara swap -s sell -t '<token>' -a all` |
+| Simulate a crypto swap without executing | `minara swap -s <side> -t '<token>' -a <amount> --dry-run` |
 
 ### Transfer / send / withdraw crypto
 
@@ -36,7 +39,7 @@ Triggers: message mentions sending/transferring/withdrawing a crypto token to a 
 | User intent pattern | Action |
 |---|---|
 | "send 10 SOL to 0x…", "transfer USDC to <address>" — crypto token + recipient address | `minara transfer` (interactive) or extract params |
-| "withdraw SOL to my external wallet", "withdraw ETH to <address>" — crypto withdrawal | `minara withdraw -c <chain> -t '<token>' -a <amount> --to <address>` |
+| "withdraw SOL to my external wallet", "withdraw ETH to <address>" — crypto withdrawal | `minara withdraw -t '<token>' -a <amount> --to <address>` or `minara withdraw` (interactive) |
 
 ### Perpetual futures (Hyperliquid)
 
@@ -49,7 +52,7 @@ Triggers: message mentions perps, perpetual, futures, long, short, leverage, mar
 | "check my perp positions", "show my Hyperliquid positions" | `minara perps positions` |
 | "set leverage to 10x for ETH perps" | `minara perps leverage` |
 | "cancel my perp orders" | `minara perps cancel` |
-| "deposit USDC to perps account", "fund my Hyperliquid account" | `minara perps deposit -a <amount>` |
+| "deposit USDC to perps account", "fund my Hyperliquid account" | `minara deposit perps` or `minara perps deposit -a <amount>` |
 | "withdraw USDC from perps" | `minara perps withdraw -a <amount>` |
 | "show my perp trade history" | `minara perps trades` |
 | "show perps deposit/withdrawal records" | `minara perps fund-records` |
@@ -64,15 +67,6 @@ Triggers: message mentions limit order + crypto token/price.
 | "list my crypto limit orders" | `minara limit-order list` |
 | "cancel limit order <id>" | `minara limit-order cancel <id>` |
 
-### Copy trading (crypto)
-
-Triggers: message mentions copy trade/trading + wallet address or crypto context.
-
-| User intent pattern | Action |
-|---|---|
-| "copy trade wallet 0x…", "create a copy trading bot for this crypto wallet" | `minara copy-trade create` |
-| "list my copy trade bots" | `minara copy-trade list` |
-| "start/stop/delete copy trade bot <id>" | `minara copy-trade start\|stop\|delete <id>` |
 
 ### Crypto wallet / portfolio / account
 
@@ -80,10 +74,13 @@ Triggers: message mentions crypto balance, portfolio, assets, wallet, deposit ad
 
 | User intent pattern | Action |
 |---|---|
-| "check my crypto balance", "show my token portfolio", "how much ETH do I have in Minara" | `minara assets spot` |
-| "show my perps balance", "Hyperliquid account balance" | `minara assets perps` |
-| "show all my crypto assets" | `minara assets` |
-| "show deposit address", "how do I deposit crypto", "where to send USDC" | `minara deposit` |
+| "what's my total balance", "how much USDC do I have" — quick balance check | `minara balance` |
+| "show my crypto portfolio", "spot holdings with PnL", "how much ETH do I have in Minara" | `minara assets spot` |
+| "show my perps balance", "Hyperliquid account equity" | `minara assets perps` |
+| "show all my crypto assets" — full overview (spot + perps) | `minara assets` |
+| "show deposit address", "where to send USDC" — spot deposit addresses | `minara deposit spot` |
+| "deposit to perps", "transfer USDC from spot to perps", "fund perps from spot" | `minara deposit perps` |
+| "how do I deposit crypto" — interactive (spot or perps) | `minara deposit` |
 | "show my Minara account", "my wallet addresses" | `minara account` |
 
 ### Crypto AI chat / market analysis
@@ -144,6 +141,10 @@ Triggers: message explicitly mentions Minara login, setup, or configuration.
 ### Supported chains
 
 Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana, Berachain, Blast, Manta, Mode, Sonic.
+
+### Chain abstraction (swap)
+
+Chain is auto-detected from the token. If a token exists on multiple chains, the CLI prompts the user to pick one (sorted by gas cost, lowest first). Sell mode accepts `-a all` to sell entire balance.
 
 ### Token input (`-t` flag)
 
