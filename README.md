@@ -1,44 +1,26 @@
-# Minara OpenClaw Skills
+# Minara Skills
 
-An [OpenClaw](https://docs.openclaw.ai) skill that gives your AI agent crypto trading intelligence via [Minara](https://minara.ai). Uses the **Minara CLI** for wallet login, trading, swaps, perps, AI chat, and market discovery. Supports both **EVM** and **Solana** chains.
+The ultimate and all-in-one digital finance solution designed for agents: built-in crypto wallet, assets management, transfers, trading token & stock, and institution-grade real-time market insights. Powered by [Minara](https://minara.ai).
 
 ## Features
 
-| Capability              | Interface         | Chains       | Description                                                            |
-| ----------------------- | ----------------- | ------------ | ---------------------------------------------------------------------- |
-| **Login & Account**     | CLI               | All          | Email, Google, or Apple login — persistent session                     |
-| **Balance & Portfolio** | CLI               | All          | Quick balance, spot holdings with PnL, perps equity & positions        |
-| **Spot Swap**           | CLI               | EVM + Solana | Chain-abstracted swaps (auto-detect chain from token)                   |
-| **Transfer & Withdraw** | CLI               | EVM + Solana | Send tokens to external wallets                                        |
-| **Deposit**             | CLI               | EVM + Solana | Spot deposit addresses; deposit to perps (direct or Spot → Perps transfer) |
-| **Perpetual Futures**   | CLI               | EVM          | Orders, positions, leverage, TP/SL                                     |
-| **Limit Orders**        | CLI               | EVM + Solana | Price-triggered limit orders with expiry                               |
-| **AI Chat**             | CLI               | All          | Interactive REPL & single-shot with fast/quality/thinking modes        |
-| **Market Discovery**    | CLI               | All          | Trending tokens, Fear & Greed Index, BTC metrics, token search         |
+| Capability              | Description                                                                                        |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| **Chain Abstraction**   | One flow across EVM and Solana — chain is auto-detected from the token, no manual chain selection  |
+| **Gasless**             | Gasless transactions where Minara or the underlying network supports it — no gas tokens needed     |
+| **Login & Account**     | Email, Google, or Apple login — persistent session, no seed phrase or private key management       |
+| **Balance & Portfolio** | Unified balance across spot and perps; spot holdings with PnL breakdown                            |
+| **Spot Swap**           | Chain-abstracted, gasless-friendly swaps by ticker, name, or contract address; sell-all support    |
+| **Transfer & Withdraw** | Send tokens to any external wallet across supported chains                                         |
+| **Deposit**             | Spot deposit addresses (EVM + Solana); deposit to perps directly or via Spot → Perps transfer      |
+| **Perpetual Futures**   | Orders, positions, leverage, TP/SL on Hyperliquid                                                  |
+| **Limit Orders**        | Price-triggered limit orders with expiry                                                           |
+| **AI Chat**             | Crypto & stock insights and research; interactive REPL & single-shot (fast/quality/thinking modes) |
+| **Market Discovery**    | Trending tokens, Fear & Greed Index, BTC on-chain metrics, token & stock search                    |
 
-## How it works
+## Supported Chains
 
-The skill uses an **intent routing** model — each user request pattern maps to a CLI command:
-
-- **CLI** (`minara` binary) — handles all wallet operations, trading execution, AI chat, and market discovery. Requires `minara login` once.
-
-```
-User intent
-    ↓
-┌─────────────────────────────────────┐
-│  Intent Routing (SKILL.md)          │
-│  pattern match → CLI command        │
-└────────────────┬────────────────────┘
-                 │
-                 ▼
-          ┌─────────────┐
-          │ Minara CLI  │
-          │ minara swap │
-          │ minara chat │
-          │ minara perps│
-          │ ...         │
-          └─────────────┘
-```
+Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BNB Chain, Solana, Berachain, Blast, Manta, Mode, Sonic.
 
 ## Quick Start
 
@@ -87,25 +69,54 @@ Add to `~/.openclaw/openclaw.json`:
 
 Then run `minara login` once.
 
-## Supported Chains
+## Best practices
 
-Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana, Berachain, Blast, Manta, Mode, Sonic.
+Once the Minara skill is enabled, you talk to the OpenClaw agent in natural language. The agent will run the right commands for you. Below are recommended prompts from a user's perspective.
+
+### Basic flow: login → deposit → trade
+
+| Step           | What you want                                         | Example prompts to the agent                                                                                                              |
+| -------------- | ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Login**   | Sign in to Minara (first time or new session)         | _"Login to Minara"_ / _"Sign in to Minara"_ / _"Help me set up Minara"_                                                                   |
+| **2. Deposit** | Get an address to send funds, or move USDC into perps | _"Show my Minara deposit address"_ / _"Where do I send USDC to fund my Minara spot wallet?"_ / _"Deposit 500 USDC from my spot to perps"_ |
+| **3. Trade**   | Buy or sell tokens                                    | _"Buy 100 USDC worth of ETH"_ / _"Swap 0.1 ETH to USDC"_ / _"Sell 50 SOL for USDC"_                                                       |
+
+After login, you can say for example: _"What's my Minara balance?"_ then _"Buy 50 USDC of BONK on Solana"_ — the agent will run the commands and show you the result.
+
+### Advanced: perps and limit orders
+
+| Goal                     | Example prompts to the agent                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| **Open a perp position** | _"Open a long ETH perp on Hyperliquid"_ / _"Short BTC perp, 10x leverage"_ / _"Place a perp order"_ |
+| **Manage perps**         | _"Show my perp positions"_ / _"Set leverage to 10x for ETH perps"_ / _"Cancel my open perp orders"_ |
+| **Limit order**          | _"Create a limit order: buy ETH when price hits $3000"_ / _"Buy SOL when it reaches $150"_          |
+| **Manage limit orders**  | _"List my Minara limit orders"_ / _"Cancel limit order [id]"_                                       |
+
+You can combine with research: _"What's the BTC price?"_ → _"Open a long BTC perp with 5x leverage"_.
+
+### Other useful prompts
+
+- _"Show my crypto portfolio"_ / _"What's my total balance on Minara?"_
+- _"What tokens are trending?"_ / _"Search for SOL tokens"_
+- _"Withdraw 10 SOL to [your address]"_ / _"Transfer 100 USDC to [address]"_
+
+All of the above are phrased as **user prompts to the OpenClaw agent**; the agent uses the Minara skill to run the right actions.
 
 ## Examples
 
 See [`examples.md`](skills/minara/examples.md) for full commands and code:
 
-| # | Scenario |
-|---|---|
-| 1 | Login & account |
-| 2 | Swap tokens |
-| 3 | Transfer & withdraw |
-| 4 | Wallet & portfolio |
-| 5 | Perpetual futures |
-| 6 | AI chat |
-| 7 | Market discovery |
-| 8 | Limit orders |
-| 9 | Premium & subscription |
+| #   | Scenario               |
+| --- | ---------------------- |
+| 1   | Login & account        |
+| 2   | Swap tokens            |
+| 3   | Transfer & withdraw    |
+| 4   | Wallet & portfolio     |
+| 5   | Perpetual futures      |
+| 6   | AI chat                |
+| 7   | Market discovery       |
+| 8   | Limit orders           |
+| 9   | Premium & subscription |
 
 ## File Structure
 

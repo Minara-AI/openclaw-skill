@@ -4,7 +4,29 @@ description: "Crypto trading: swap, perps, transfer, deposit, withdraw, AI chat,
 homepage: https://minara.ai
 disable-model-invocation: true
 metadata:
-  { "openclaw": { "always": false, "disableModelInvocation": true, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara@latest", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] } }
+  {
+    "openclaw":
+      {
+        "always": false,
+        "disableModelInvocation": true,
+        "primaryEnv": "MINARA_API_KEY",
+        "requires":
+          { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] },
+        "emoji": "👩",
+        "homepage": "https://minara.ai",
+        "install":
+          [
+            {
+              "id": "node",
+              "kind": "node",
+              "package": "minara@latest",
+              "global": true,
+              "bins": ["minara"],
+              "label": "Install Minara CLI (npm)",
+            },
+          ],
+      },
+  }
 ---
 
 # Minara
@@ -27,98 +49,97 @@ Triggers: message contains token names/tickers + action words (swap, buy, sell, 
 
 Chain is **auto-detected** from the token. If a token exists on multiple chains, the CLI prompts the user to pick one (sorted by gas cost). Sell mode supports `-a all` to sell entire balance.
 
-| User intent pattern | Action |
-|---|---|
+| User intent pattern                                                                                                                                      | Action                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | "swap 0.1 ETH to USDC", "buy me 100 USDC worth of ETH", "sell 50 SOL for USDC", "convert 200 USDC to BONK on Solana" — natural-language or explicit swap | Extract params → `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
-| "sell all my BONK", "dump entire SOL position" | `minara swap -s sell -t '<token>' -a all` |
-| Simulate a crypto swap without executing | `minara swap -s <side> -t '<token>' -a <amount> --dry-run` |
+| "sell all my BONK", "dump entire SOL position"                                                                                                           | `minara swap -s sell -t '<token>' -a all`                              |
+| Simulate a crypto swap without executing                                                                                                                 | `minara swap -s <side> -t '<token>' -a <amount> --dry-run`             |
 
 ### Transfer / send / withdraw crypto
 
 Triggers: message mentions sending/transferring/withdrawing a crypto token to a wallet address (0x… or base58).
 
-| User intent pattern | Action |
-|---|---|
-| "send 10 SOL to 0x…", "transfer USDC to <address>" — crypto token + recipient address | `minara transfer` (interactive) or extract params |
+| User intent pattern                                                                   | Action                                                                                       |
+| ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| "send 10 SOL to 0x…", "transfer USDC to <address>" — crypto token + recipient address | `minara transfer` (interactive) or extract params                                            |
 | "withdraw SOL to my external wallet", "withdraw ETH to <address>" — crypto withdrawal | `minara withdraw -t '<token>' -a <amount> --to <address>` or `minara withdraw` (interactive) |
 
 ### Perpetual futures (Hyperliquid)
 
 Triggers: message mentions perps, perpetual, futures, long, short, leverage, margin, or Hyperliquid.
 
-| User intent pattern | Action |
-|---|---|
-| "open a long ETH perp", "short BTC on Hyperliquid", "place a perp order" | `minara perps order` (interactive order builder) |
-| "perp strategy for ETH", "suggest a long/short for SOL", "scalping strategy 10x leverage" | `minara chat "perp strategy for ETH scalping 10x"` |
-| "check my perp positions", "show my Hyperliquid positions" | `minara perps positions` |
-| "set leverage to 10x for ETH perps" | `minara perps leverage` |
-| "cancel my perp orders" | `minara perps cancel` |
-| "deposit USDC to perps account", "fund my Hyperliquid account" | `minara deposit perps` or `minara perps deposit -a <amount>` |
-| "withdraw USDC from perps" | `minara perps withdraw -a <amount>` |
-| "show my perp trade history" | `minara perps trades` |
-| "show perps deposit/withdrawal records" | `minara perps fund-records` |
+| User intent pattern                                                                       | Action                                                       |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| "open a long ETH perp", "short BTC on Hyperliquid", "place a perp order"                  | `minara perps order` (interactive order builder)             |
+| "perp strategy for ETH", "suggest a long/short for SOL", "scalping strategy 10x leverage" | `minara chat "perp strategy for ETH scalping 10x"`           |
+| "check my perp positions", "show my Hyperliquid positions"                                | `minara perps positions`                                     |
+| "set leverage to 10x for ETH perps"                                                       | `minara perps leverage`                                      |
+| "cancel my perp orders"                                                                   | `minara perps cancel`                                        |
+| "deposit USDC to perps account", "fund my Hyperliquid account"                            | `minara deposit perps` or `minara perps deposit -a <amount>` |
+| "withdraw USDC from perps"                                                                | `minara perps withdraw -a <amount>`                          |
+| "show my perp trade history"                                                              | `minara perps trades`                                        |
+| "show perps deposit/withdrawal records"                                                   | `minara perps fund-records`                                  |
 
 ### Limit orders (crypto)
 
 Triggers: message mentions limit order + crypto token/price.
 
-| User intent pattern | Action |
-|---|---|
-| "create a limit order for ETH at $3000", "buy SOL when it hits $150" | `minara limit-order create` |
-| "list my crypto limit orders" | `minara limit-order list` |
-| "cancel limit order <id>" | `minara limit-order cancel <id>` |
-
+| User intent pattern                                                  | Action                           |
+| -------------------------------------------------------------------- | -------------------------------- |
+| "create a limit order for ETH at $3000", "buy SOL when it hits $150" | `minara limit-order create`      |
+| "list my crypto limit orders"                                        | `minara limit-order list`        |
+| "cancel limit order <id>"                                            | `minara limit-order cancel <id>` |
 
 ### Crypto wallet / portfolio / account
 
 Triggers: message mentions crypto balance, portfolio, assets, wallet, deposit address, or Minara account.
 
-| User intent pattern | Action |
-|---|---|
-| "what's my total balance", "how much USDC do I have" — quick balance check | `minara balance` |
-| "show my crypto portfolio", "spot holdings with PnL", "how much ETH do I have in Minara" | `minara assets spot` |
-| "show my perps balance", "Hyperliquid account equity" | `minara assets perps` |
-| "show all my crypto assets" — full overview (spot + perps) | `minara assets` |
-| "show deposit address", "where to send USDC" — spot deposit addresses | `minara deposit spot` |
-| "deposit to perps", "transfer USDC from spot to perps", "fund perps from spot" | `minara deposit perps` |
-| "how do I deposit crypto" — interactive (spot or perps) | `minara deposit` |
-| "show my Minara account", "my wallet addresses" | `minara account` |
+| User intent pattern                                                                      | Action                 |
+| ---------------------------------------------------------------------------------------- | ---------------------- |
+| "what's my total balance", "how much USDC do I have" — quick balance check               | `minara balance`       |
+| "show my crypto portfolio", "spot holdings with PnL", "how much ETH do I have in Minara" | `minara assets spot`   |
+| "show my perps balance", "Hyperliquid account equity"                                    | `minara assets perps`  |
+| "show all my crypto assets" — full overview (spot + perps)                               | `minara assets`        |
+| "show deposit address", "where to send USDC" — spot deposit addresses                    | `minara deposit spot`  |
+| "deposit to perps", "transfer USDC from spot to perps", "fund perps from spot"           | `minara deposit perps` |
+| "how do I deposit crypto" — interactive (spot or perps)                                  | `minara deposit`       |
+| "show my Minara account", "my wallet addresses"                                          | `minara account`       |
 
 ### Crypto AI chat / market analysis
 
 Triggers: message asks about crypto prices, token analysis, DeFi research, on-chain data, crypto market insights, or prediction market analysis.
 
-| User intent pattern | Action |
-|---|---|
-| "what's the BTC price", "analyze ETH tokenomics", "DeFi yield opportunities", crypto research, on-chain analysis | `minara chat "<user text>"` |
-| "analyze this Polymarket event", "prediction market odds on <topic>", "what are the chances of <event>" — prediction market insights | `minara chat "<user text or URL>"` |
-| Deep crypto analysis requiring reasoning — "think through ETH vs SOL long-term" | `minara chat --thinking "<user text>"` |
-| High-quality detailed crypto analysis — "detailed report on Solana DeFi ecosystem" | `minara chat --quality "<user text>"` |
-| "continue our previous Minara chat" | `minara chat -c <chatId>` |
-| "list my Minara chat history" | `minara chat --list` |
+| User intent pattern                                                                                                                  | Action                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| "what's the BTC price", "analyze ETH tokenomics", "DeFi yield opportunities", crypto research, on-chain analysis                     | `minara chat "<user text>"`            |
+| "analyze this Polymarket event", "prediction market odds on <topic>", "what are the chances of <event>" — prediction market insights | `minara chat "<user text or URL>"`     |
+| Deep crypto analysis requiring reasoning — "think through ETH vs SOL long-term"                                                      | `minara chat --thinking "<user text>"` |
+| High-quality detailed crypto analysis — "detailed report on Solana DeFi ecosystem"                                                   | `minara chat --quality "<user text>"`  |
+| "continue our previous Minara chat"                                                                                                  | `minara chat -c <chatId>`              |
+| "list my Minara chat history"                                                                                                        | `minara chat --list`                   |
 
 ### Crypto market discovery
 
 Triggers: message mentions trending tokens, crypto market sentiment, fear and greed, or Bitcoin metrics.
 
-| User intent pattern | Action |
-|---|---|
-| "what crypto tokens are trending", "hot tokens right now" | `minara discover trending` |
-| "search for SOL tokens", "find crypto token X" | `minara discover search <query>` |
-| "crypto fear and greed index", "market sentiment" | `minara discover fear-greed` |
-| "bitcoin on-chain metrics", "BTC hashrate and supply data" | `minara discover btc-metrics` |
+| User intent pattern                                        | Action                           |
+| ---------------------------------------------------------- | -------------------------------- |
+| "what crypto tokens are trending", "hot tokens right now"  | `minara discover trending`       |
+| "search for SOL tokens", "find crypto token X"             | `minara discover search <query>` |
+| "crypto fear and greed index", "market sentiment"          | `minara discover fear-greed`     |
+| "bitcoin on-chain metrics", "BTC hashrate and supply data" | `minara discover btc-metrics`    |
 
 ### Minara premium / subscription
 
 Triggers: message explicitly mentions Minara plan, subscription, credits, or pricing.
 
-| User intent pattern | Action |
-|---|---|
-| "show Minara plans", "Minara pricing" | `minara premium plans` |
-| "my Minara subscription status" | `minara premium status` |
-| "subscribe to Minara", "upgrade Minara plan" | `minara premium subscribe` |
-| "buy Minara credits" | `minara premium buy-credits` |
-| "cancel Minara subscription" | `minara premium cancel` |
+| User intent pattern                          | Action                       |
+| -------------------------------------------- | ---------------------------- |
+| "show Minara plans", "Minara pricing"        | `minara premium plans`       |
+| "my Minara subscription status"              | `minara premium status`      |
+| "subscribe to Minara", "upgrade Minara plan" | `minara premium subscribe`   |
+| "buy Minara credits"                         | `minara premium buy-credits` |
+| "cancel Minara subscription"                 | `minara premium cancel`      |
 
 ### Minara login / setup
 
@@ -126,11 +147,11 @@ Triggers: message explicitly mentions Minara login, setup, or configuration.
 
 **Login:** Prefer device code flow (e.g. `minara login --device-code` when available) for headless or non-interactive environments; otherwise `minara login` (interactive).
 
-| User intent pattern | Action |
-|---|---|
+| User intent pattern                                             | Action                                                                           |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
 | "login to Minara", "sign in to Minara", first-time Minara setup | `minara login` (prefer device code if supported) or `minara login --device-code` |
-| "logout from Minara" | `minara logout` |
-| "configure Minara settings" | `minara config` |
+| "logout from Minara"                                            | `minara logout`                                                                  |
+| "configure Minara settings"                                     | `minara config`                                                                  |
 
 ## CLI reference
 
@@ -160,17 +181,23 @@ Fund operations follow: first confirmation (skip with `-y`) → transaction conf
 
 ## Credentials
 
-| Source | Location | Required |
-|---|---|---|
-| CLI session | `~/.minara/credentials.json` | Yes (auto-created via `minara login`) |
-| API Key | `MINARA_API_KEY` env or `skills.entries.minara.apiKey` | No — if set, CLI authenticates automatically without `minara login` |
+| Source      | Location                                               | Required                                                            |
+| ----------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
+| CLI session | `~/.minara/credentials.json`                           | Yes (auto-created via `minara login`)                               |
+| API Key     | `MINARA_API_KEY` env or `skills.entries.minara.apiKey` | No — if set, CLI authenticates automatically without `minara login` |
 
 ## Config
 
 `~/.openclaw/openclaw.json`:
 
 ```json
-{ "skills": { "entries": { "minara": { "enabled": true, "apiKey": "YOUR_MINARA_API_KEY" } } } }
+{
+  "skills": {
+    "entries": {
+      "minara": { "enabled": true, "apiKey": "YOUR_MINARA_API_KEY" }
+    }
+  }
+}
 ```
 
 `apiKey` is optional — if set, the CLI authenticates automatically; otherwise the user must run `minara login` first.
