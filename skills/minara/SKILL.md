@@ -11,7 +11,7 @@ metadata:
 
 Crypto trading intelligence + built-in wallet. EVM (Base, Ethereum, Arbitrum, Optimism, BSC, Polygon, Solana, etc.).
 
-**Prerequisite:** CLI must be logged in. If `MINARA_API_KEY` is configured, the CLI authenticates automatically. Otherwise, check `~/.minara/credentials.json`; if missing → run `minara login`.
+**Prerequisite:** CLI must be logged in. If `MINARA_API_KEY` is configured, the CLI authenticates automatically. Otherwise, check `~/.minara/credentials.json`; if missing → run `minara login`. Prefer **device code** flow when guiding login (e.g. headless, SSH, or automation).
 
 ## Intent routing
 
@@ -122,13 +122,19 @@ Triggers: message explicitly mentions Minara plan, subscription, credits, or pri
 
 Triggers: message explicitly mentions Minara login, setup, or configuration.
 
+**Login:** Prefer device code flow (e.g. `minara login --device-code` when available) for headless or non-interactive environments; otherwise `minara login` (interactive).
+
 | User intent pattern | Action |
 |---|---|
-| "login to Minara", "sign in to Minara", first-time Minara setup | `minara login` |
+| "login to Minara", "sign in to Minara", first-time Minara setup | `minara login` (prefer device code if supported) or `minara login --device-code` |
 | "logout from Minara" | `minara logout` |
 | "configure Minara settings" | `minara config` |
 
 ## CLI reference
+
+### Login
+
+Prefer **device code** flow for Minara login when possible (e.g. `minara login --device-code`), especially in headless, SSH, or automated contexts. Interactive `minara login` supports email, Google, Apple, or device code depending on CLI version.
 
 ### Supported chains
 
