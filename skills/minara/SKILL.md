@@ -4,29 +4,7 @@ description: "Crypto trading: swap, perps, transfer, deposit, withdraw, AI chat,
 homepage: https://minara.ai
 disable-model-invocation: true
 metadata:
-  {
-    "openclaw":
-      {
-        "always": false,
-        "disableModelInvocation": true,
-        "primaryEnv": "MINARA_API_KEY",
-        "requires":
-          { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] },
-        "emoji": "👩",
-        "homepage": "https://minara.ai",
-        "install":
-          [
-            {
-              "id": "node",
-              "kind": "node",
-              "package": "minara@latest",
-              "global": true,
-              "bins": ["minara"],
-              "label": "Install Minara CLI (npm)",
-            },
-          ],
-      },
-  }
+  { "openclaw": { "always": false, "disableModelInvocation": true, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara@latest", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] } }
 ---
 
 # Minara
@@ -62,7 +40,7 @@ Triggers: message mentions sending/transferring/withdrawing a crypto token to a 
 | User intent pattern                                                                   | Action                                                                                       |
 | ------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | "send 10 SOL to 0x…", "transfer USDC to <address>" — crypto token + recipient address | `minara transfer` (interactive) or extract params                                            |
-| "withdraw SOL to my external wallet", "withdraw ETH to <address>" — crypto withdrawal | `minara withdraw -t '<token>' -a <amount> --to <address>` or `minara withdraw` (interactive) |
+| "withdraw SOL to my external wallet", "withdraw ETH to <address>" — crypto withdrawal | `minara withdraw -c <chain> -t '<token>' -a <amount> --to <address>` or `minara withdraw` (interactive) |
 
 ### Perpetual futures (Hyperliquid)
 
@@ -118,16 +96,17 @@ Triggers: message asks about crypto prices, token analysis, DeFi research, on-ch
 | "continue our previous Minara chat"                                                                                                  | `minara chat -c <chatId>`              |
 | "list my Minara chat history"                                                                                                        | `minara chat --list`                   |
 
-### Crypto market discovery
+### Crypto & stock market discovery
 
-Triggers: message mentions trending tokens, crypto market sentiment, fear and greed, or Bitcoin metrics.
+Triggers: message mentions trending tokens, trending stocks, crypto market sentiment, fear and greed, or Bitcoin metrics.
 
-| User intent pattern                                        | Action                           |
-| ---------------------------------------------------------- | -------------------------------- |
-| "what crypto tokens are trending", "hot tokens right now"  | `minara discover trending`       |
-| "search for SOL tokens", "find crypto token X"             | `minara discover search <query>` |
-| "crypto fear and greed index", "market sentiment"          | `minara discover fear-greed`     |
-| "bitcoin on-chain metrics", "BTC hashrate and supply data" | `minara discover btc-metrics`    |
+| User intent pattern                                                          | Action                                  |
+| ---------------------------------------------------------------------------- | --------------------------------------- |
+| "what crypto tokens are trending", "hot tokens right now"                    | `minara discover trending`              |
+| "what stocks are trending", "trending stocks", "top stocks today"            | `minara discover trending stocks`       |
+| "search for SOL tokens", "find crypto token X", "look up AAPL", "search TSLA" | `minara discover search <query>`        |
+| "crypto fear and greed index", "market sentiment"                            | `minara discover fear-greed`            |
+| "bitcoin on-chain metrics", "BTC hashrate and supply data"                   | `minara discover btc-metrics`           |
 
 ### Minara premium / subscription
 
@@ -145,11 +124,11 @@ Triggers: message explicitly mentions Minara plan, subscription, credits, or pri
 
 Triggers: message explicitly mentions Minara login, setup, or configuration.
 
-**Login:** Prefer device code flow (e.g. `minara login --device-code` when available) for headless or non-interactive environments; otherwise `minara login` (interactive).
+**Login:** Prefer device code flow (`minara login --device`) for headless or non-interactive environments; otherwise `minara login` (interactive).
 
 | User intent pattern                                             | Action                                                                           |
 | --------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| "login to Minara", "sign in to Minara", first-time Minara setup | `minara login` (prefer device code if supported) or `minara login --device-code` |
+| "login to Minara", "sign in to Minara", first-time Minara setup | `minara login` (prefer device code) or `minara login --device` |
 | "logout from Minara"                                            | `minara logout`                                                                  |
 | "configure Minara settings"                                     | `minara config`                                                                  |
 
@@ -157,7 +136,7 @@ Triggers: message explicitly mentions Minara login, setup, or configuration.
 
 ### Login
 
-Prefer **device code** flow for Minara login when possible (e.g. `minara login --device-code`), especially in headless, SSH, or automated contexts. Interactive `minara login` supports email, Google, Apple, or device code depending on CLI version.
+Prefer **device code** flow for Minara login when possible (`minara login --device`), especially in headless, SSH, or automated contexts. Interactive `minara login` defaults to device code, with email as fallback.
 
 ### Supported chains
 

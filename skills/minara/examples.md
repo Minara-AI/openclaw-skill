@@ -3,10 +3,9 @@
 ## 1 — Login & account
 
 ```bash
-minara login                       # Interactive (email / Google / Apple)
+minara login                       # Interactive (device code default, or email)
+minara login --device              # Device code (opens browser to verify)
 minara login -e user@example.com   # Email with verification code
-minara login --google              # Google OAuth
-minara login --apple               # Apple ID
 minara account                     # View account info + wallet addresses
 minara deposit spot                # Show spot deposit addresses (EVM + Solana)
 ```
@@ -41,7 +40,7 @@ minara swap -s buy -t '$ETH' -a 50 --dry-run
 minara transfer
 
 # Withdraw to external wallet
-minara withdraw -t '$SOL' -a 10 --to <address>
+minara withdraw -c solana -t '$SOL' -a 10 --to <address>
 minara withdraw   # Interactive (accepts ticker or address)
 ```
 
@@ -116,7 +115,9 @@ minara chat --history <chatId>
 
 ```bash
 minara discover trending           # Trending tokens
+minara discover trending stocks    # Trending stocks
 minara discover search SOL         # Search tokens / stocks
+minara discover search AAPL        # Search stocks by name
 minara discover fear-greed         # Crypto Fear & Greed Index
 minara discover btc-metrics        # Bitcoin on-chain metrics
 minara discover trending --json    # JSON output
