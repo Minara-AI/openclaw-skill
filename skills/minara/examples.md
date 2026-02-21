@@ -11,7 +11,7 @@ minara account                     # View account info + wallet addresses
 minara deposit spot                # Show spot deposit addresses (EVM + Solana)
 ```
 
-## 2 — Swap tokens (CLI)
+## 2 — Swap tokens
 
 Chain is auto-detected from the token.
 
@@ -34,32 +34,7 @@ minara swap -s buy -t DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263 -a 100
 minara swap -s buy -t '$ETH' -a 50 --dry-run
 ```
 
-## 3 — Swap tokens (API intent-to-swap)
-
-When the user gives a natural-language swap intent (requires `MINARA_API_KEY`):
-
-```typescript
-const quote = await fetch(
-  "https://api-developer.minara.ai/v1/developer/intent-to-swap-tx",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.MINARA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      intent: "swap 0.1 ETH to USDC",   // pass user's text as-is
-      walletAddress: "0x...",            // from minara account
-      chain: "base",                     // base|ethereum|bsc|arbitrum|optimism|solana
-    }),
-  },
-).then((r) => r.json());
-
-// quote = { intent, quote, inputToken, outputToken, approval, unsignedTx }
-// → show quote to user → on confirm → minara swap -s sell -t '$ETH' -a 0.1
-```
-
-## 4 — Transfer & withdraw
+## 3 — Transfer & withdraw
 
 ```bash
 # Transfer (interactive)
@@ -70,7 +45,7 @@ minara withdraw -t '$SOL' -a 10 --to <address>
 minara withdraw   # Interactive (accepts ticker or address)
 ```
 
-## 5 — Wallet & portfolio
+## 4 — Wallet & portfolio
 
 ```bash
 minara balance                 # Quick total: Spot + Perps USDC/USDT balance
@@ -85,7 +60,7 @@ minara deposit spot            # Show spot deposit addresses (EVM + Solana)
 minara deposit perps           # Perps: show Arbitrum address, or transfer Spot → Perps
 ```
 
-## 6 — Perpetual futures
+## 5 — Perpetual futures
 
 ```bash
 # Fund perps account
@@ -111,34 +86,7 @@ minara perps trades
 minara perps fund-records
 ```
 
-## 7 — Perp strategy (API)
-
-When the user asks for a perp trading recommendation (requires `MINARA_API_KEY`):
-
-```typescript
-const strategy = await fetch(
-  "https://api-developer.minara.ai/v1/developer/perp-trading-suggestion",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.MINARA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      symbol: "ETH",
-      style: "scalping",        // scalping|day-trading|swing-trading
-      marginUSD: 1000,
-      leverage: 10,
-      strategy: "max-profit",
-    }),
-  },
-).then((r) => r.json());
-
-// strategy = { entryPrice, side, stopLossPrice, takeProfitPrice, confidence, reasons, risks }
-// → show to user → on confirm → minara perps order
-```
-
-## 8 — AI chat
+## 6 — AI chat
 
 ```bash
 # Single question
@@ -164,70 +112,7 @@ minara chat --list
 minara chat --history <chatId>
 ```
 
-### Chat API — streaming (requires `MINARA_API_KEY`)
-
-```typescript
-const res = await fetch(
-  "https://api-developer.minara.ai/v1/developer/chat",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.MINARA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      mode: "fast",             // fast|expert
-      stream: true,             // default: true — SSE streaming
-      message: { role: "user", content: "What is the current BTC price?" },
-    }),
-  },
-);
-
-const reader = res.body!.getReader();
-const decoder = new TextDecoder();
-let buffer = "";
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  buffer += decoder.decode(value, { stream: true });
-
-  const lines = buffer.split("\n");
-  buffer = lines.pop()!;
-
-  for (const line of lines) {
-    if (!line.startsWith("data: ")) continue;
-    const data = line.slice(6);
-    if (data === "[DONE]") break;
-    const chunk = JSON.parse(data);
-    if (chunk.content) process.stdout.write(chunk.content); // stream to user
-  }
-}
-```
-
-Non-streaming alternative (`stream: false`):
-
-```typescript
-const res = await fetch(
-  "https://api-developer.minara.ai/v1/developer/chat",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.MINARA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      mode: "fast",
-      stream: false,
-      message: { role: "user", content: "What is the current BTC price?" },
-    }),
-  },
-).then((r) => r.json());
-
-// { chatId, messageId, content, usage }
-```
-
-## 9 — Market discovery
+## 7 — Market discovery
 
 ```bash
 minara discover trending           # Trending tokens
@@ -237,29 +122,7 @@ minara discover btc-metrics        # Bitcoin on-chain metrics
 minara discover trending --json    # JSON output
 ```
 
-## 10 — Prediction market (API, requires `MINARA_API_KEY`)
-
-```typescript
-const prediction = await fetch(
-  "https://api-developer.minara.ai/v1/developer/prediction-market-ask",
-  {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.MINARA_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      link: "https://polymarket.com/event/...",
-      mode: "expert",
-      only_result: false,
-    }),
-  },
-).then((r) => r.json());
-
-// { predictions: [{ outcome, yesProb, noProb }], reasoning }
-```
-
-## 11 — Limit orders
+## 8 — Limit orders
 
 ```bash
 minara limit-order create          # Interactive: token, price, side, amount, expiry
@@ -267,8 +130,7 @@ minara limit-order list            # List all orders
 minara limit-order cancel abc123   # Cancel by ID
 ```
 
-
-## 12 — Premium & subscription
+## 9 — Premium & subscription
 
 ```bash
 minara premium plans               # View plans

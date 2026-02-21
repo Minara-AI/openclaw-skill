@@ -1,6 +1,6 @@
 ---
 name: minara
-description: "Crypto trading: swap, perps, transfer, deposit, withdraw, AI chat, market discovery. Built-in wallet via Minara CLI + Agent API. EVM + Solana."
+description: "Crypto trading: swap, perps, transfer, deposit, withdraw, AI chat, market discovery. Built-in wallet via Minara CLI. EVM + Solana."
 homepage: https://minara.ai
 disable-model-invocation: true
 metadata:
@@ -11,11 +11,11 @@ metadata:
 
 Crypto trading intelligence + built-in wallet. EVM (Base, Ethereum, Arbitrum, Optimism, BSC, Polygon, Solana, etc.).
 
-**Prerequisite:** CLI must be logged in. Check `~/.minara/credentials.json`; if missing → `minara login`.
+**Prerequisite:** CLI must be logged in. If `MINARA_API_KEY` is configured, the CLI authenticates automatically. Otherwise, check `~/.minara/credentials.json`; if missing → run `minara login`.
 
 ## Intent routing
 
-Match the user's message to the **first** matching row. `API_KEY` = `MINARA_API_KEY` is set.
+Match the user's message to the **first** matching row.
 
 **Activation keywords:** This skill handles requests that mention **crypto tokens** (ETH, BTC, SOL, USDC, BONK, etc.), **chains** (Solana, Base, Ethereum, Arbitrum, etc.), **DeFi** terms (swap, perps, leverage, yield, liquidity), or explicitly reference **Minara**. If the user's message contains none of these signals, this skill likely does not apply.
 
@@ -27,8 +27,7 @@ Chain is **auto-detected** from the token. If a token exists on multiple chains,
 
 | User intent pattern | Action |
 |---|---|
-| Natural-language crypto swap — "swap 0.1 ETH to USDC", "buy me 100 USDC worth of ETH", "sell 50 SOL for USDC", "convert 200 USDC to BONK on Solana", "exchange my ETH for USDC on Base" | **IF** `API_KEY` → call `POST /v1/developer/intent-to-swap-tx` with `{ intent: "<user text>", walletAddress, chain }` → show quote → confirm → execute via `minara swap`. **ELSE** → extract params → `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
-| Explicit crypto swap params (token, amount already parsed) | `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
+| "swap 0.1 ETH to USDC", "buy me 100 USDC worth of ETH", "sell 50 SOL for USDC", "convert 200 USDC to BONK on Solana" — natural-language or explicit swap | Extract params → `minara swap -s <buy\|sell> -t '<token>' -a <amount>` |
 | "sell all my BONK", "dump entire SOL position" | `minara swap -s sell -t '<token>' -a all` |
 | Simulate a crypto swap without executing | `minara swap -s <side> -t '<token>' -a <amount> --dry-run` |
 
@@ -48,7 +47,7 @@ Triggers: message mentions perps, perpetual, futures, long, short, leverage, mar
 | User intent pattern | Action |
 |---|---|
 | "open a long ETH perp", "short BTC on Hyperliquid", "place a perp order" | `minara perps order` (interactive order builder) |
-| "perp strategy for ETH", "suggest a long/short for SOL", "scalping strategy 10x leverage" | **IF** `API_KEY` → `POST /v1/developer/perp-trading-suggestion` with `{ symbol, style, marginUSD, leverage }` → show entry, SL, TP, confidence, risks. **ELSE** → `minara chat "perp strategy for ETH scalping 10x"` |
+| "perp strategy for ETH", "suggest a long/short for SOL", "scalping strategy 10x leverage" | `minara chat "perp strategy for ETH scalping 10x"` |
 | "check my perp positions", "show my Hyperliquid positions" | `minara perps positions` |
 | "set leverage to 10x for ETH perps" | `minara perps leverage` |
 | "cancel my perp orders" | `minara perps cancel` |
@@ -85,11 +84,12 @@ Triggers: message mentions crypto balance, portfolio, assets, wallet, deposit ad
 
 ### Crypto AI chat / market analysis
 
-Triggers: message asks about crypto prices, token analysis, DeFi research, on-chain data, or crypto market insights.
+Triggers: message asks about crypto prices, token analysis, DeFi research, on-chain data, crypto market insights, or prediction market analysis.
 
 | User intent pattern | Action |
 |---|---|
-| "what's the BTC price", "analyze ETH tokenomics", "DeFi yield opportunities", crypto research, on-chain analysis | **IF** `API_KEY` → `POST /v1/developer/chat` with `{ mode: "fast"\|"expert", stream: true, message: { role: "user", content: "<user text>" } }` — stream SSE chunks to user in real time. **ELSE** → `minara chat "<user text>"` |
+| "what's the BTC price", "analyze ETH tokenomics", "DeFi yield opportunities", crypto research, on-chain analysis | `minara chat "<user text>"` |
+| "analyze this Polymarket event", "prediction market odds on <topic>", "what are the chances of <event>" — prediction market insights | `minara chat "<user text or URL>"` |
 | Deep crypto analysis requiring reasoning — "think through ETH vs SOL long-term" | `minara chat --thinking "<user text>"` |
 | High-quality detailed crypto analysis — "detailed report on Solana DeFi ecosystem" | `minara chat --quality "<user text>"` |
 | "continue our previous Minara chat" | `minara chat -c <chatId>` |
@@ -105,14 +105,6 @@ Triggers: message mentions trending tokens, crypto market sentiment, fear and gr
 | "search for SOL tokens", "find crypto token X" | `minara discover search <query>` |
 | "crypto fear and greed index", "market sentiment" | `minara discover fear-greed` |
 | "bitcoin on-chain metrics", "BTC hashrate and supply data" | `minara discover btc-metrics` |
-
-### Prediction market (Polymarket)
-
-Triggers: message contains a Polymarket URL or mentions prediction market analysis.
-
-| User intent pattern | Action |
-|---|---|
-| "analyze this Polymarket event: <URL>", "what are the odds on <polymarket link>" | **IF** `API_KEY` → `POST /v1/developer/prediction-market-ask` with `{ link, mode: "expert" }`. **ELSE** → `minara chat "analyze this prediction market: <link>"` |
 
 ### Minara premium / subscription
 
@@ -158,56 +150,12 @@ Add `--json` to any command for machine-readable output: `minara assets spot --j
 
 Fund operations follow: first confirmation (skip with `-y`) → transaction confirmation (mandatory, shows token details + contract address) → Touch ID (optional, macOS) → execute.
 
-## Agent API reference
-
-All API endpoints require `MINARA_API_KEY`. Base URL: `https://api-developer.minara.ai`. All `POST` with `Authorization: Bearer $MINARA_API_KEY` and `Content-Type: application/json`.
-
-### `POST /v1/developer/chat`
-
-```json
-{ "mode": "fast|expert", "stream": true, "message": { "role": "user", "content": "..." }, "chatId": "optional" }
-```
-
-Default `stream: true`. The response is a stream of Server-Sent Events (SSE). Read chunks and output them to the user incrementally as they arrive. Each SSE `data:` line contains a JSON object; concatenate the `content` field from each chunk to form the full response. The final event signals completion.
-
-Non-streaming (`stream: false`) returns: `{ chatId, messageId, content, usage }`
-
-### `POST /v1/developer/intent-to-swap-tx`
-
-Pass the user's natural-language swap request as `intent`. The API resolves tokens, parses amounts, and returns a quote.
-
-```json
-{ "intent": "<user's swap text>", "walletAddress": "<from minara account>", "chain": "base|ethereum|bsc|arbitrum|optimism|solana" }
-```
-
-Response: `{ intent, quote, inputToken, outputToken, approval, unsignedTx }`
-
-Show the quote (tokens, amounts, price impact, fees) to the user. On confirmation, execute via `minara swap`.
-
-### `POST /v1/developer/perp-trading-suggestion`
-
-```json
-{ "symbol": "ETH", "style": "scalping|day-trading|swing-trading", "marginUSD": 1000, "leverage": 10, "strategy": "max-profit" }
-```
-
-Response: `{ entryPrice, side, stopLossPrice, takeProfitPrice, confidence, reasons[], risks[] }`
-
-Show strategy to user. On confirmation, execute via `minara perps order`.
-
-### `POST /v1/developer/prediction-market-ask`
-
-```json
-{ "link": "https://polymarket.com/event/...", "mode": "expert", "only_result": false, "customPrompt": "optional" }
-```
-
-Response: `{ predictions: [{ outcome, yesProb, noProb }], reasoning }`
-
 ## Credentials
 
 | Source | Location | Required |
 |---|---|---|
-| CLI session | `~/.minara/credentials.json` | Yes |
-| API Key | `MINARA_API_KEY` env or `skills.entries.minara.apiKey` | Only for API endpoints |
+| CLI session | `~/.minara/credentials.json` | Yes (auto-created via `minara login`) |
+| API Key | `MINARA_API_KEY` env or `skills.entries.minara.apiKey` | No — if set, CLI authenticates automatically without `minara login` |
 
 ## Config
 
@@ -217,8 +165,8 @@ Response: `{ predictions: [{ outcome, yesProb, noProb }], reasoning }`
 { "skills": { "entries": { "minara": { "enabled": true, "apiKey": "YOUR_MINARA_API_KEY" } } } }
 ```
 
-`apiKey` is optional — omit it to use CLI-only mode.
+`apiKey` is optional — if set, the CLI authenticates automatically; otherwise the user must run `minara login` first.
 
 ## Examples
 
-Full command and API examples: `{baseDir}/examples.md`
+Full command examples: `{baseDir}/examples.md`
