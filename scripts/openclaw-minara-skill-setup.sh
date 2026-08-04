@@ -248,7 +248,7 @@ fi
 # ---------------------------------------------------------------------------
 # Step 1: Install or update Minara CLI
 # ---------------------------------------------------------------------------
-echo "==> [1/5] Minara CLI..."
+echo "==> [1/4] Minara CLI..."
 if command -v minara &>/dev/null; then
   CURRENT_CLI_VER=$(minara --version 2>/dev/null || echo "0.0.0")
   CURRENT_CLI_VER="${CURRENT_CLI_VER#v}"
@@ -272,7 +272,7 @@ fi
 # Step 2: Install or update Minara skill
 # ---------------------------------------------------------------------------
 echo ""
-echo "==> [2/5] Minara skill..."
+echo "==> [2/4] Minara skill..."
 mkdir -p "$SKILLS_DIR"
 
 SKILL_ACTION="none"
@@ -318,7 +318,7 @@ fi
 # Step 3: Enable minara in openclaw.json
 # ---------------------------------------------------------------------------
 echo ""
-echo "==> [3/5] OpenClaw config..."
+echo "==> [3/4] OpenClaw config..."
 CONFIG_PATH="$(_resolve_config_path "$CONFIG_PATH")"
 _ensure_minara_config "$CONFIG_PATH"
 
@@ -326,64 +326,9 @@ _ensure_minara_config "$CONFIG_PATH"
 # Step 4: Workspace integration (AGENTS.md + MEMORY.md)
 # ---------------------------------------------------------------------------
 echo ""
-echo "==> [4/5] Workspace integration..."
+echo "==> [4/4] Workspace integration..."
 _inject_agents_prompt
 _inject_memory
-
-# ---------------------------------------------------------------------------
-# Step 5: Login (skip if already logged in)
-# ---------------------------------------------------------------------------
-echo ""
-echo "==> [5/5] Minara login..."
-
-ALREADY_LOGGED_IN=false
-if command -v minara &>/dev/null; then
-  if minara whoami &>/dev/null 2>&1; then
-    ALREADY_LOGGED_IN=true
-    WHOAMI=$(minara whoami 2>/dev/null || echo "")
-    echo "    Already logged in${WHOAMI:+ as $WHOAMI}"
-  fi
-fi
-
-if [[ "$ALREADY_LOGGED_IN" == false ]]; then
-  echo "    Starting device code login..."
-  echo ""
-
-  LOGIN_LOG="$TMP_DIR/minara-login.log"
-  minara login --device < /dev/null > "$LOGIN_LOG" 2>&1 &
-  LOGIN_PID=$!
-
-  PRINTED_URL=false
-  while kill -0 "$LOGIN_PID" 2>/dev/null; do
-    if [[ -f "$LOGIN_LOG" ]] && [[ "$PRINTED_URL" == false ]]; then
-      LOGIN_URL=$(grep -oE 'https?://[^ ]+' "$LOGIN_LOG" | head -1 || true)
-      if [[ -n "$LOGIN_URL" ]]; then
-        echo "============================================"
-        echo "  Open this URL to complete login:"
-        echo "  $LOGIN_URL"
-        echo ""
-        grep -i 'code' "$LOGIN_LOG" | head -1 | while read -r line; do echo "  $line"; done || true
-        echo "============================================"
-        echo ""
-        echo "  Waiting for browser verification..."
-        PRINTED_URL=true
-      fi
-    fi
-    sleep 1
-  done
-
-  wait "$LOGIN_PID" 2>/dev/null
-  LOGIN_EXIT=$?
-
-  if [[ -f "$LOGIN_LOG" ]]; then
-    cat "$LOGIN_LOG"
-  fi
-
-  if [[ "$LOGIN_EXIT" -ne 0 ]]; then
-    echo ""
-    echo "    Login failed or was cancelled. Run 'minara login' to retry."
-  fi
-fi
 
 # ---------------------------------------------------------------------------
 # Summary
@@ -401,9 +346,7 @@ echo "============================================"
 echo ""
 command -v minara &>/dev/null && echo "  CLI version: $(minara --version 2>/dev/null || echo 'ok')"
 echo "  Skill version: v$(_skill_version "$SKILLS_DIR/minara")"
-if [[ "$ALREADY_LOGGED_IN" == true ]] || [[ "${LOGIN_EXIT:-1}" -eq 0 ]]; then
-  echo "  Logged in: yes"
-fi
+echo "  Authentication: on demand"
 echo ""
 echo "  You can now use Minara for crypto trading, market data,"
 echo "  perpetual futures, and more. Try asking:"
