@@ -1,6 +1,11 @@
 # Auth / Account / Config
 
-> Execute commands yourself. Only relay verification URLs/codes for user to complete in browser.
+> Execute commands yourself. Relay device verification URLs/codes to the user. Email verification
+> codes may be retrieved through the narrowly scoped flow in `auth-recovery.md`.
+
+Authentication is lazy: do not run an account check when the skill activates. If an
+account-required command reports an authentication error, follow
+[`auth-recovery.md`](auth-recovery.md).
 
 ## Commands
 
