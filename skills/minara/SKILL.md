@@ -1,9 +1,9 @@
 ---
 name: minara
-version: "3.0.2"
+version: "3.0.3"
 description: "Crypto trading & wallet, and AI market analysis via Minara CLI. Swap, perps, transfer, deposit (credit card/crypto), withdraw, AI chat, market discovery, x402 payment, autopilot, limit orders, premium. EVM + Solana + Hyperliquid. Use when: (1) crypto tokens/tickers (ETH, BTC, SOL, USDC, $TICKER, contract addresses), (2) chain names (Ethereum, Solana, Base, Arbitrum, Hyperliquid), (3) trading actions (swap, buy, sell, long, short, perps, leverage, limit order, autopilot), (4) wallet actions (balance, portfolio, deposit, withdraw, transfer, send, pay, credit card), (5) market data (trending, price, analysis, fear & greed, BTC metrics, Polymarket, DeFi), (6) stock tickers in crypto context (AAPL, TSLA), (7) Minara/x402/MoonPay explicitly, (8) subscription/premium/credits."
 homepage: https://minara.ai
-metadata: { "openclaw": { "always": false, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara@latest", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] }, "version": "3.0.2" }
+metadata: { "openclaw": { "always": false, "primaryEnv": "MINARA_API_KEY", "requires": { "bins": ["minara"], "config": ["skills.entries.minara.enabled"] }, "emoji": "👩", "homepage": "https://minara.ai", "install": [{ "id": "node", "kind": "node", "package": "minara@latest", "global": true, "bins": ["minara"], "label": "Install Minara CLI (npm)" }] }, "version": "3.0.3" }
 ---
 
 # Minara — Your Personal Crypto AI Financial Officer for Crypto Trading & Wallet Management
@@ -20,7 +20,7 @@ On first activation, read `{baseDir}/setup.md` and follow its instructions.
 bash {baseDir}/scripts/version-check.sh
 ```
 
-- `UP_TO_DATE` or `SNOOZED` → **continue to login check**.
+- `UP_TO_DATE` or `SNOOZED` → **continue without an activation-time login check**.
 - Contains `UPGRADE` → parse which components need updating, then **ask the user**:
 
 > "Minara update available — [cli: X→Y] [skill: X→Y]. What would you like to do?
@@ -41,16 +41,18 @@ rm -f ~/.minara/.last-update-check
 
 Only prompt for the components listed in the `UPGRADE` output (e.g. if only `cli:` is present, don't mention skill).
 
-### Login check (after version check)
+### Authentication is lazy (after version check)
 
-Run `minara account` to check login state:
-- **Success** → continue silently to the user's request.
-- **Failure** → user is not logged in. Automatically run `minara login --device` with `pty: true`. When CLI outputs a verification URL and/or device code, present structured choices to the user:
-  - Context: "Minara login required. Open this URL to complete login: {URL}\nDevice code: {code}"
-  - Options: A) I've completed browser verification / B) Cancel login
-  - After user confirms A → verify with `minara account`, then proceed.
+Do **not** run `minara account` when this skill is activated. Authentication is checked only
+when the requested Minara command actually needs account access.
 
-> This check runs automatically on every session. The user does not need to manually trigger login.
+- Start the requested command normally.
+- If it succeeds, continue without a separate account probe.
+- If it returns an authentication error, follow
+  [`references/auth-recovery.md`](references/auth-recovery.md), then retry the original command once.
+- Public discovery or other commands that work without an account must never trigger login.
+- Do not turn a network, Cloudflare, or upstream API error into a login prompt unless the CLI
+  explicitly reports an authentication failure.
 
 ## Activation triggers
 
@@ -71,7 +73,7 @@ Run `minara account` to check login state:
 ## Prerequisites
 
 - CLI: `minara` in PATH
-- Auth: `minara account` succeeds. If not → run `minara login --device` and relay URL/code to user
+- Auth: checked only when a requested command reports an authentication error; then follow `references/auth-recovery.md`
 - `MINARA_API_KEY` env var bypasses login
 
 ## Agent behavior (CRITICAL)
@@ -83,7 +85,7 @@ Run `minara account` to check login state:
 3. **If fund-moving** → follow the **Transaction confirmation** flow below. Message 1 = confirmation summary only. Message 2 (after user replies) = execute.
 4. Execute the command yourself (use `pty: true` for interactive commands)
 5. Read CLI output → decide next step autonomously
-6. If error → diagnose, retry or report
+6. If authentication fails → follow `references/auth-recovery.md`; otherwise diagnose, retry or report
 7. Return: **Task** → **Actions** → **Result** → **Follow-ups**
 
 **Never** show CLI commands and ask the user to run it themself.
