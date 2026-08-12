@@ -154,6 +154,7 @@ _inject_claude_md() {
     fi
     printf '%s\n' "$CLAUDE_MD_BLOCK" >> "$tmp_claude"
     if [[ "$end_line" -lt "$total_lines" ]]; then
+      printf '\n' >> "$tmp_claude"
       tail -n +"$((end_line + 1))" "$CLAUDE_MD" >> "$tmp_claude"
     fi
     cp "$tmp_claude" "$CLAUDE_MD"

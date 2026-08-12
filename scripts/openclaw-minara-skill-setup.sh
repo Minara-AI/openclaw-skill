@@ -200,6 +200,7 @@ _inject_agents_prompt() {
     fi
     printf '%s\n' "$AGENTS_BLOCK" >> "$tmp_agents"
     if [[ "$end_line" -lt "$total_lines" ]]; then
+      printf '\n' >> "$tmp_agents"
       tail -n +"$((end_line + 1))" "$agents_file" >> "$tmp_agents"
     fi
     cp "$tmp_agents" "$agents_file"
