@@ -154,6 +154,7 @@ _inject_memory_md() {
     fi
     printf '%s\n' "$MEMORY_MD_BLOCK" >> "$tmp_memory"
     if [[ "$end_line" -lt "$total_lines" ]]; then
+      printf '\n' >> "$tmp_memory"
       tail -n +"$((end_line + 1))" "$MEMORY_MD" >> "$tmp_memory"
     fi
     cp "$tmp_memory" "$MEMORY_MD"
